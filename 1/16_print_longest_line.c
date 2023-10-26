@@ -2,9 +2,20 @@
 
 #define MAXLINE 100
 
+/**
+ * Read input and copy characters into array until newline or limit is
+ * reached. Return length of line.
+ */
 int _getline(char line[], int maxline);
+/**
+ * Copy one array of characters to another.
+ */
 void copy(char to[], char from[]);
 
+/**
+ * Read input line by line and copy the longest line into an array and
+ * print as much of the longest line as possible (up to MAXLINE chars).
+ */
 int main() {
     int len;
     int max;
