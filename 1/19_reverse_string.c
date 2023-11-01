@@ -2,10 +2,21 @@
 
 #define MAXLENGTH 1000
 
+/**
+ * Read input and copy characters into array until newline or limit is
+ * reached. Return length of line.
+ */
 int get_line(char line[], int maxline);
 
+/**
+ * Take a line ('\n'-terminated char array) and reverse it in place,
+ * keeping the newline character at the end.
+ */
 void reverse(char line[], int limit);
 
+/**
+ * Reverse program input one line at a time.
+ */
 int main() {
     int len;
     char current_line[MAXLENGTH];
@@ -38,17 +49,21 @@ void reverse(char s[], int lim) {
     int len;
     char t[MAXLENGTH];
 
+    // neither loop will not be entered for line containing only '\n'
     while ((t[i] = s[i]) != '\n') {
         i++;
     }
 
     len = i;
 
-    while (i >= 0) {
-        s[len - i] = t[i];
+    while (i > 0) {
+        // copy penultimate char (last before '\n') of t into 0th char
+        // of s, then antepenultimate to 1st, and so forth
+        s[len - i] = t[i - 1];
         i--;
     }
-    s[len + 1] = '\n';
-    s[len + 2] = '\0';
 
+    // ensure line terminates correctly
+    s[len] = '\n';
+    s[len + 1] = '\0';
 }
