@@ -1,6 +1,7 @@
 a line that is normal length
 a line that is highty, extremely, excessivly, unusually longwinded and just long
 another normal length line
+alonglinethathasnowhitespacesowhatsitgoingtodowhenitreachesthefoldinglength?
 
 a normal line preceded by an empty line
 a long line with                                           a ton of whitespace

@@ -41,6 +41,7 @@ void print_folded_line(char buffer[], int count)
     char new_buffer[FOLDLENGTH];
 
     state = OUT;
+    last_word_index = -1;
     while ((c = getchar()) != EOF)
     {
         is_whitespace = (c == ' ' || c == '\t');
@@ -68,22 +69,43 @@ void print_folded_line(char buffer[], int count)
         {
             buffer[count] = '\0';
             count = 0;
+            state = OUT;
+            last_word_index = -1;
             printf("%s", buffer);
         }
 
         // recursive case
-        else if (count > FOLDLENGTH)
+        else if (count == FOLDLENGTH)
         {
-            // copy current word to new buffer
-            for (i = 0; i < count - last_word_index; i++)
+            // some whitespace was encountered before fold
+            if (last_word_index > 0)
             {
-                new_buffer[i] = buffer[last_word_index + i];
+                // copy current word to new buffer
+                for (i = 0; i < count - last_word_index; i++)
+                {
+                    new_buffer[i] = buffer[last_word_index + i];
+                }
+
+                // terminate current buffer after last full word
+                buffer[last_word_index - 1] = '\n';
+                buffer[last_word_index] = '\0';
+
+                printf("%s", buffer);
+                print_folded_line(new_buffer, count - last_word_index);
+                last_word_index = -1;
             }
-            // terminate current buffer
-            buffer[last_word_index - 1] = '\n';
-            buffer[last_word_index] = '\0';
-            printf("%s", buffer);
-            print_folded_line(new_buffer, count - last_word_index);
+            // no whitespace was encountered before fold
+            else
+            {
+                // terminate current buffer at n-th character
+                buffer[count] = '\n';
+                buffer[count + 1] = '\0';
+
+                printf("%s", buffer);
+                print_folded_line(new_buffer, 0);
+            }
+            count = 0;
+            state = OUT;
         }
     }
 }
