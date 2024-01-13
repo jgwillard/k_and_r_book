@@ -1,6 +1,11 @@
 #include <stdio.h>
 
-int main() {
-    printf("hello, world\n");
+/**
+ * some comment
+ */
+int main()
+{
+    printf("hello, world /* and a sneaky comment */\n");
+    printf("hello, world // and a sneaky comment\n");
     // printf("\c\n");
 }

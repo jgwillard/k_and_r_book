@@ -1,21 +1,12 @@
 #include <stdio.h>
 
-#define MAXLENGTH 1000
 #define OUT 0
 #define IN_SINGLE_LINE 1
 #define IN_MULTI_LINE 2
 #define LEAVING_MULTI_LINE 3
-
-void print_program_without_comments(char line[], int lim);
-int get_state(int current_state, char previous, char current);
+#define IN_QUOTED_STRING 4
 
 int main()
-{
-    char buffer[MAXLENGTH];
-    print_program_without_comments(buffer, MAXLENGTH);
-}
-
-void print_program_without_comments(char buffer[], int lim)
 {
     int i;
     int c;
@@ -25,9 +16,20 @@ void print_program_without_comments(char buffer[], int lim)
     state = OUT;
     while ((c = getchar()) != EOF)
     {
+        // enter quoted string
+        if (state == OUT && c == '"')
+        {
+            state = IN_QUOTED_STRING;
+        }
+
+        // leave quoted string
+        else if (state == IN_QUOTED_STRING && c == '"')
+        {
+            state = OUT;
+        }
 
         // enter a single-line comment
-        if (state == OUT && previous == '/' && c == '/')
+        else if (state == OUT && previous == '/' && c == '/')
         {
             state = IN_SINGLE_LINE;
         }
@@ -50,13 +52,15 @@ void print_program_without_comments(char buffer[], int lim)
             state = LEAVING_MULTI_LINE;
         }
 
+        // we have left multi-line comment
+        // (ensure we don't print final '/')
         else if (state == LEAVING_MULTI_LINE)
         {
             state = OUT;
         }
 
         // we are out of a comment with no transition
-        else if (state == OUT)
+        else if (state == OUT || state == IN_QUOTED_STRING)
         {
             putchar(previous);
         }
