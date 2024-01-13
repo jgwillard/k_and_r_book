@@ -8,7 +8,6 @@
 
 int main()
 {
-    int i;
     int c;
     int state;
     int previous;
