@@ -6,12 +6,13 @@
 #define IN_SINGLE_QUOTED_STRING 2
 #define IN_DOUBLE_QUOTED_STRING 3
 
-void print_err(int line_no, int col_no, int state, char *msg)
+int error(int line_no, int col_no, int state, char *msg)
 {
     printf("Line number: %d\n", line_no);
     printf("Col number: %d\n", col_no);
     printf("State: %d\n", state);
     printf("Error message: %s\n", msg);
+    return 1;
 }
 
 int main()
@@ -23,6 +24,7 @@ int main()
     int stack_ptr = 0;
     int col_no = 0;
     int line_no = 1;
+    char err_msg[20];
 
     while ((c = getchar()) != EOF)
     {
@@ -70,7 +72,7 @@ int main()
 
         if (c == '"')
         {
-            if (state == IN_DOUBLE_QUOTED_STRING)
+            if (state == IN_DOUBLE_QUOTED_STRING && previous != '\\')
             {
                 state = NORMAL;
             }
@@ -90,20 +92,17 @@ int main()
 
         if (c == ')' && stack[--stack_ptr] != '(')
         {
-            print_err(line_no, col_no, state, "Parenthesis mismatch");
-            return 1;
+            return error(line_no, col_no, state, "Parenthesis mismatch");
         }
 
         if (c == ']' && stack[--stack_ptr] != '[')
         {
-            print_err(line_no, col_no, state, "Square bracket mismatch");
-            return 1;
+            return error(line_no, col_no, state, "Square bracket mismatch");
         }
 
         if (c == '}' && stack[--stack_ptr] != '{')
         {
-            print_err(line_no, col_no, state, "Curly brace mismatch");
-            return 1;
+            return error(line_no, col_no, state, "Curly brace mismatch");
         }
 
         previous = c;
@@ -111,21 +110,17 @@ int main()
 
     if (state == IN_SINGLE_QUOTED_STRING)
     {
-        print_err(line_no, col_no, state, "Expected closing '");
+        return error(line_no, col_no, state, "Expected closing '");
     }
     else if (state == IN_DOUBLE_QUOTED_STRING)
     {
-        print_err(line_no, col_no, state, "Expected closing \"");
+        return error(line_no, col_no, state, "Expected closing \"");
     }
 
     if (stack_ptr > 0)
     {
-        for (int i = 0; i < stack_ptr; i++)
-        {
-            printf("%c\n", stack[i]);
-        }
-        printf("Error detected: %c\n", stack[stack_ptr - 1]);
-        return 1;
+        sprintf(err_msg, "Expected closing %c", stack[stack_ptr - 1]);
+        return error(line_no, col_no, state, err_msg);
     }
 
     printf("No errors detected\n");
