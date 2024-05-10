@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #define MAX_NESTING_DEPTH 1000
 #define NORMAL 0
@@ -18,7 +19,7 @@ int error(int line_no, int col_no, int state, char *msg)
 int main()
 {
     int c;
-    int previous;
+    bool escaped = false;
     int state = NORMAL;
     int stack[MAX_NESTING_DEPTH];
     int stack_ptr = 0;
@@ -28,14 +29,14 @@ int main()
 
     while ((c = getchar()) != EOF)
     {
-        col_no++;
-
         if (stack_ptr > MAX_NESTING_DEPTH)
         {
             printf("Max nesting depth exceeded: %d", MAX_NESTING_DEPTH);
             return 1;
         }
 
+        // track line and column number
+        col_no++;
         if (c == '\n')
         {
             line_no++;
@@ -44,68 +45,76 @@ int main()
 
         if (state == IN_SINGLE_QUOTED_STRING && c != '\'')
         {
-            previous = c;
-            continue;
+            // noop
         }
-
-        if (state == IN_DOUBLE_QUOTED_STRING && c != '"')
+        else if (state == IN_DOUBLE_QUOTED_STRING && c != '"')
         {
-            previous = c;
-            continue;
+            // noop
+        }
+        else
+        {
+            // only track state of brackets if we are not in a quoted
+            // string or comment
+            if (c == '(' || c == '[' || c == '{')
+            {
+                stack[stack_ptr++] = c;
+            }
+
+            if (c == ')' && stack[--stack_ptr] != '(')
+            {
+                return error(line_no, col_no, state, "Parenthesis mismatch");
+            }
+
+            if (c == ']' && stack[--stack_ptr] != '[')
+            {
+                return error(line_no, col_no, state, "Square bracket mismatch");
+            }
+
+            if (c == '}' && stack[--stack_ptr] != '{')
+            {
+                return error(line_no, col_no, state, "Curly brace mismatch");
+            }
         }
 
         // transition between quoted string and normal states, ignoring
         // escape sequences
         if (c == '\'')
         {
-            if (state == IN_SINGLE_QUOTED_STRING && previous != '\\')
+            if (state == IN_SINGLE_QUOTED_STRING && !escaped)
             {
                 state = NORMAL;
+            }
+            else if (state == IN_DOUBLE_QUOTED_STRING) {
+                // noop
             }
             else
             {
                 state = IN_SINGLE_QUOTED_STRING;
-                previous = c;
-                continue;
             }
         }
-
-        if (c == '"')
+        else if (c == '"')
         {
-            if (state == IN_DOUBLE_QUOTED_STRING && previous != '\\')
+            if (state == IN_DOUBLE_QUOTED_STRING && !escaped)
             {
                 state = NORMAL;
+            }
+            else if (state == IN_SINGLE_QUOTED_STRING) {
+                // noop
             }
             else
             {
                 state = IN_DOUBLE_QUOTED_STRING;
-                previous = c;
-                continue;
             }
         }
 
-        // track state of brackets
-        if (c == '(' || c == '[' || c == '{')
+        if (c == '\\')
         {
-            stack[stack_ptr++] = c;
+            escaped = !escaped;
         }
-
-        if (c == ')' && stack[--stack_ptr] != '(')
+        else
         {
-            return error(line_no, col_no, state, "Parenthesis mismatch");
+            escaped = false;
         }
-
-        if (c == ']' && stack[--stack_ptr] != '[')
-        {
-            return error(line_no, col_no, state, "Square bracket mismatch");
-        }
-
-        if (c == '}' && stack[--stack_ptr] != '{')
-        {
-            return error(line_no, col_no, state, "Curly brace mismatch");
-        }
-
-        previous = c;
     }
 
     if (state == IN_SINGLE_QUOTED_STRING)
