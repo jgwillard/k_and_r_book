@@ -7,11 +7,11 @@
 #define IN_SINGLE_QUOTED_STRING 2
 #define IN_DOUBLE_QUOTED_STRING 3
 
-int error(int line_no, int col_no, int state, char *msg)
+int error(int line_no, int col_no, int mode, char *msg)
 {
     printf("Line number: %d\n", line_no);
     printf("Col number: %d\n", col_no);
-    printf("State: %d\n", state);
+    printf("mode: %d\n", mode);
     printf("Error message: %s\n", msg);
     return 1;
 }
@@ -20,7 +20,7 @@ int main()
 {
     int c;
     bool escaped = false;
-    int state = NORMAL;
+    int mode = NORMAL;
     int stack[MAX_NESTING_DEPTH];
     int stack_ptr = 0;
     int col_no = 0;
@@ -43,70 +43,84 @@ int main()
             col_no = 0;
         }
 
-        if (state == IN_SINGLE_QUOTED_STRING && c != '\'')
+        // transition between quoted string and normal modes, ignoring
+        // escape sequences
+
+        // if we are in single quoted string mode and we encounter any
+        // character other than a single quote, do nothing
+        if (mode == IN_SINGLE_QUOTED_STRING && c != '\'')
         {
             // noop
         }
-        else if (state == IN_DOUBLE_QUOTED_STRING && c != '"')
+        // if we are in double quoted string mode and we encounter any
+        // character other than a double quote, do nothing
+        else if (mode == IN_DOUBLE_QUOTED_STRING && c != '"')
         {
             // noop
         }
+        // if we encounter a single quote in any mode, then:
+        //      if we are in single quote mode, transition to normal mode
+        //      if we are in double quote mode, ignore
+        //      if we are in normal mode, transition to single quote mode
+        else if (c == '\'')
+        {
+            if (mode == IN_SINGLE_QUOTED_STRING && !escaped)
+            {
+                mode = NORMAL;
+            }
+            else if (mode == IN_DOUBLE_QUOTED_STRING) {
+                // noop
+            }
+            else if (mode == NORMAL)
+            {
+                mode = IN_SINGLE_QUOTED_STRING;
+            }
+        }
+        // if we encounter a double quote in any mode, then:
+        //      if we are in double quote mode, transition to normal mode
+        //      if we are in single quote mode, ignore
+        //      if we are in normal mode, transition to double quote mode
+        else if (c == '"')
+        {
+            if (mode == IN_DOUBLE_QUOTED_STRING && !escaped)
+            {
+                mode = NORMAL;
+            }
+            else if (mode == IN_SINGLE_QUOTED_STRING) {
+                // noop
+            }
+            else
+            {
+                mode = IN_DOUBLE_QUOTED_STRING;
+            }
+        }
+        // handle all other characters in normal mode
         else
         {
-            // only track state of brackets if we are not in a quoted
-            // string or comment
+            // push any opening brackets onto the stack
             if (c == '(' || c == '[' || c == '{')
             {
                 stack[stack_ptr++] = c;
             }
 
+            // if we encounter any closing brackets, pop stack and check
             if (c == ')' && stack[--stack_ptr] != '(')
             {
-                return error(line_no, col_no, state, "Parenthesis mismatch");
+                return error(line_no, col_no, mode, "Parenthesis mismatch");
             }
 
             if (c == ']' && stack[--stack_ptr] != '[')
             {
-                return error(line_no, col_no, state, "Square bracket mismatch");
+                return error(line_no, col_no, mode, "Square bracket mismatch");
             }
 
             if (c == '}' && stack[--stack_ptr] != '{')
             {
-                return error(line_no, col_no, state, "Curly brace mismatch");
+                return error(line_no, col_no, mode, "Curly brace mismatch");
             }
         }
 
-        // transition between quoted string and normal states, ignoring
-        // escape sequences
-        if (c == '\'')
-        {
-            if (state == IN_SINGLE_QUOTED_STRING && !escaped)
-            {
-                state = NORMAL;
-            }
-            else if (state == IN_DOUBLE_QUOTED_STRING) {
-                // noop
-            }
-            else
-            {
-                state = IN_SINGLE_QUOTED_STRING;
-            }
-        }
-        else if (c == '"')
-        {
-            if (state == IN_DOUBLE_QUOTED_STRING && !escaped)
-            {
-                state = NORMAL;
-            }
-            else if (state == IN_SINGLE_QUOTED_STRING) {
-                // noop
-            }
-            else
-            {
-                state = IN_DOUBLE_QUOTED_STRING;
-            }
-        }
-
+        // manage escaped state
         if (c == '\\')
         {
             escaped = !escaped;
@@ -117,19 +131,19 @@ int main()
         }
     }
 
-    if (state == IN_SINGLE_QUOTED_STRING)
+    if (mode == IN_SINGLE_QUOTED_STRING)
     {
-        return error(line_no, col_no, state, "Expected closing '");
+        return error(line_no, col_no, mode, "Expected closing '");
     }
-    else if (state == IN_DOUBLE_QUOTED_STRING)
+    else if (mode == IN_DOUBLE_QUOTED_STRING)
     {
-        return error(line_no, col_no, state, "Expected closing \"");
+        return error(line_no, col_no, mode, "Expected closing \"");
     }
 
     if (stack_ptr > 0)
     {
         sprintf(err_msg, "Expected closing %c", stack[stack_ptr - 1]);
-        return error(line_no, col_no, state, err_msg);
+        return error(line_no, col_no, mode, err_msg);
     }
 
     printf("No errors detected\n");
