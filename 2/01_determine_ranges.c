@@ -6,12 +6,13 @@
  * maximum values for a given type (signed and unsigned).
  *
  * get_min_type:
- *  Using the bitwise complement operator (~) on a value, it flips all
- *  the bits of that value. If that value is 0 then all bits will be
- *  flipped to 1. We then right shift (>>) all the bits by 1 place. For
- *  example, an 8 bit value of 1111 1111 (0xFF) would be changed to
- *  0111 1111 (0x7F). Finally, we take the complement of that value:
- *  1000 0000 (0x80).
+ *  Using the bitwise complement operator (~) on a value flips all the
+ *  bits of that value. If that value is 0 then all bits will be flipped
+ *  to 1. So we first create a value of the width of the type all of
+ *  whose bits are 1 (~0). We then right shift (>>) all the bits by 1
+ *  place. For example, an 8 bit value of 1111 1111 (0xFF) would be
+ *  changed to 0111 1111 (0x7F). Finally, we take the complement of that
+ *  value: 1000 0000 (0x80).
  *
  *  NOTE: In two's complement, if the most significant bit
  *  is 1 then the number is negative, so this represents the lowest
