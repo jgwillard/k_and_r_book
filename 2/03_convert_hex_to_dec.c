@@ -24,7 +24,7 @@ int power(int base, int exponent)
  * an optional `0x` or `0X` prefix and returns its value as an int. It
  * multiplies the value of the digit in each place by 16^(place - 1).
  * For example, the first (least significant) digit is multiplied by
- * 16^(1 - 1) = 16^0 = 1, the second digit is multiplied by 16^(2 -1),
+ * 16^(1 - 1) = 16^0 = 1, the second digit is multiplied by 16^(2 - 1),
  * etc. The value of the digit is then added to the total value of the
  * number, which is returned when the whole string has been processed.
  */
@@ -50,11 +50,11 @@ int htoi(char s[])
         {
             total += (s[i] - '0') * multiplier;
         }
-        else if (s[i] >= 'A' && s[i] <= 'Z')
+        else if (s[i] >= 'A' && s[i] <= 'F')
         {
             total += (s[i] - 'A' + 10) * multiplier;
         }
-        else if (s[i] >= 'a' && s[i] <= 'z')
+        else if (s[i] >= 'a' && s[i] <= 'f')
         {
             total += (s[i] - 'a' + 10) * multiplier;
         }
