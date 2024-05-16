@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/**
+ * Delete each character in string `s1` that matches any character in
+ * string `s2`.
+ */
 void squeeze(char s1[], char s2[])
 {
     int i, j, k;
@@ -11,7 +15,6 @@ void squeeze(char s1[], char s2[])
         delete = false;
         for (k = 0; s2[k] != '\0'; k++)
         {
-
             if (s1[i] == s2[k])
             {
                 delete = true;
