@@ -23,15 +23,11 @@ unsigned getbits(unsigned x, int p, int n)
  */
 unsigned setbits(unsigned x, int p, int n, unsigned y)
 {
-    int i;
-    unsigned mask = 0;
-
-    // create a bitmask n 1s starting from the rightmost position
-    for (i = 0; i < n; i++)
-    {
-        mask = mask << 1;
-        mask = mask | 1;
-    }
+    // create a bitmask of n 1s starting from the rightmost position
+    // (complement of 0 creates a number of all 1s, left shifting n
+    // places will fill the rightmost n places with 0s, then taking the
+    // complement of that number will give the desired bitmask)
+    unsigned mask = ~(~0 << n);
 
     // zero out y except for the rightmost n bits
     y = mask & y;
