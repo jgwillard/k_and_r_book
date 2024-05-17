@@ -23,15 +23,35 @@ unsigned getbits(unsigned x, int p, int n)
  */
 unsigned setbits(unsigned x, int p, int n, unsigned y)
 {
-    // TODO
+    int i;
+    unsigned mask = 0;
+
+    // create a bitmask n 1s starting from the rightmost position
+    for (i = 0; i < n; i++)
+    {
+        mask = mask << 1;
+        mask = mask | 1;
+    }
+
+    // zero out y except for the rightmost n bits
+    y = mask & y;
+    // left shift the rightmost n bits to start at position p
+    y = y << ((p + 1) - n);
+
+    // left shift the rightmost n bits of the bitmask to start at p
+    mask = mask << ((p + 1) - n);
+    // zero out the n bits starting at position p of x
+    mask = ~mask;
+    x = mask & x;
+
+    return x | y;
 }
 
 int main()
 {
-    unsigned x = getbits(0x1c, 4, 3);
-    printf("0x%x\n", x);
-    unsigned y = getbits(0x18, 4, 3);
-    printf("0x%x\n", y);
-    unsigned z = getbits(0x14, 4, 3);
-    printf("0x%x\n", z);
+    printf("%d\n", setbits(170, 2, 3, 85));  // -> 173
+    printf("%d\n", setbits(255, 3, 2, 255)); // -> 255
+    printf("%d\n", setbits(255, 3, 2, 0));   // -> 243
+    printf("%d\n", setbits(255, 7, 8, 0));   // -> 0
+    printf("%d\n", setbits(255, 7, 7, 0));   // -> 1
 }
