@@ -31,7 +31,7 @@ unsigned rightrot(unsigned x, int n)
     // shift rightmost n bits to leftmost position
     unsigned left_bits = right_bits << (size - n);
     // rotate
-    x = x >> n;
+    x >>= n;
     // assign the former rightmost bits to the leftmost position
     return x |= left_bits;
 }
