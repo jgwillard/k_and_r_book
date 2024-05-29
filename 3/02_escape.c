@@ -2,6 +2,10 @@
 
 #define MAXLINE 100
 
+/**
+ * Copies string `from` to `to`, converting characters like newline and
+ * tab to visible escape sequences.
+ */
 void escape(char to[], char from[])
 {
     int i, j;
@@ -27,6 +31,10 @@ void escape(char to[], char from[])
     to[j] = '\0';
 }
 
+/**
+ * Copies string `from` to `to`, converting escape sequences `\n` and
+ * `\t` into the real characters newline and tab.
+ */
 void unescape(char to[], char from[])
 {
     int i, j;
@@ -39,11 +47,11 @@ void unescape(char to[], char from[])
             switch (from[i + 1])
             {
             case 't':
-                to[j] = '\t';
+                to[j++] = '\t';
                 i++;
                 break;
             case 'n':
-                to[j] = '\n';
+                to[j++] = '\n';
                 i++;
                 break;
             default:
